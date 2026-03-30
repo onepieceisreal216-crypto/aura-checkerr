@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Loop Engine</title>
+    <link rel="stylesheet" href="style.css"> <title>Aura Checker</title>
+</head>
+<body>
+
+<div id="game-card">
+    <div id="stats">AURA: <span id="aura-count">0</span></div>
+    <div id="bot-text">Initialize System... Enter Name:</div>
+
+    <div id="input-area">
+        <input type="text" id="user-input" autofocus>
+        <br>
+        <button onclick="processLogic()">Submit</button>
+    </div>
+
+    <div id="category-area" class="hidden">
+        <button onclick="startCategory('anime')">Anime</button>
+        <button onclick="startCategory('sports')">Sports</button>
+        <button onclick="startCategory('movies')">Movies</button>
+    </div>
+
+    <div id="final-area" class="hidden">
+        <button onclick="location.reload()">Reboot System</button>
+    </div>
+</div>
+
+<script>
+    // --- QUESTION BANK (The "Loop" Data) ---
+    const questionBank = {
+        anime: [
+            { q: "ONE WORD: Who is the 'Ghost of the Uchiha'?", a: "madara", era: "millennial" },
+            { q: "ONE WORD: What is the last name of 'Light' from Death Note?", a: "yagami", era: "millennial" },
+            { q: "ONE WORD: What is the name of Naruto's orange fox?", a: "kurama", era: "genZ" }
+        ],
+        sports: [
+            { q: "ONE WORD: Last name of the GOAT 'Lionel'?", a: "messi", era: "alpha" },
+            { q: "ONE WORD: What is CR7's iconic celebration word?", a: "siuu", era: "alpha" },
+            { q: "ONE WORD: Which city did Kobe Bryant represent? (Initials)", a: "la", era: "genZ" }
+        ],
+        movies: [
+            { q: "ONE WORD: Last name of Harry?", a: "potter", era: "genZ" },
+            { q: "ONE WORD: In 'Inception', what is the spinning top called?", a: "totem", era: "millennial" }
+        ]
+    };
+
+    let aura = 0;
+    let gameState = "NAME";
+    let currentQuestions = [];
+    let qIndex = 0;
+    let scores = { alpha: 0, genZ: 0, millennial: 0 };
+
+    const botText = document.getElementById('bot-text');
+    const userInput = document.getElementById('user-input');
+    const auraDisplay = document.getElementById('aura-count');
+
+    function processLogic() {
+        let val = userInput.value.trim().toLowerCase();
+        if (gameState === "NAME") {
+            botText.innerText = `Welcome ${val}. Select your Category loop:`;
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('category-area').classList.remove('hidden');
+            gameState = "PICKING";
+        } 
+        else if (gameState === "LOOP") {
+            handleAnswer(val);
+        }
+        userInput.value = "";
+    }
+
+    function startCategory(cat) {
+        currentQuestions = questionBank[cat];
+        qIndex = 0;
+        gameState = "LOOP";
+        document.getElementById('category-area').classList.add('hidden');
+        document.getElementById('input-area').classList.remove('hidden');
+        askQuestion();
+    }
+
+    function askQuestion() {
+        if (qIndex < currentQuestions.length) {
+            botText.innerText = currentQuestions[qIndex].q;
+        } else {
+            showVerdict();
+        }
+    }
+
+    function handleAnswer(val) {
+        let currentQ = currentQuestions[qIndex];
+        
+        if (val === currentQ.a) {
+            aura += 100;
+            scores[currentQ.era]++;
+            botText.innerText = "WELL DONE KID! +100 Aura.";
+        } else {
+            aura -= 50;
+            botText.innerText = "COMMON DUMBO! Go watch it. -50 Aura.";
+        }
+        
+        auraDisplay.innerText = aura;
+        qIndex++; // Move to next question automatically
+
+        // Small delay so user can read the feedback before next question pops up
+        setTimeout(askQuestion, 1500);
+    }
+
+    function showVerdict() {
+        gameState = "FINISHED";
+        document.getElementById('input-area').classList.add('hidden');
+        document.getElementById('final-area').classList.remove('hidden');
+
+        let era = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        let eraName = era === "alpha" ? "Gen Alpha" : era === "genZ" ? "Gen Z" : "Millennial";
+
+        botText.innerHTML = `VERDICT: ${eraName}<br>Aura Status: ${aura > 150 ? "GIGACHAD" : "NPC"}`;
+    }
+
+    // Allow Enter key to submit
+    userInput.addEventListener("keyup", (event) => { if (event.key === "Enter") processLogic(); });
+
+    function handleAnswer(val) {
+    let currentQ = currentQuestions[qIndex];
+    let card = document.getElementById('game-card'); // Get the card element
+    
+    if (val === currentQ.a) {
+        aura += 100;
+        scores[currentQ.era]++;
+        botText.innerText = "WELL DONE KID! +100 Aura.";
+        
+        // Trigger Success Glow
+        card.classList.add('success-glow');
+        setTimeout(() => card.classList.remove('success-glow'), 600);
+    } else {
+        aura -= 50;
+        botText.innerText = "COMMON DUMBO! -50 Aura.";
+        
+        // Trigger Error Shake
+        card.classList.add('error-shake');
+        setTimeout(() => card.classList.remove('error-shake'), 400);
+    }
+    
+    auraDisplay.innerText = aura;
+    qIndex++; 
+    setTimeout(askQuestion, 1500);
+}
+</script>
+
+</body>
+</html>
